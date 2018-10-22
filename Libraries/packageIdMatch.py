@@ -1,22 +1,27 @@
 import csv
 from datetime import datetime
 import validation
+import readConfig
 
 
 def create_csv():
 
-	result = validation.validate()
+	config_File = readConfig.readConfig()#This will read the config file and return the values in a dict
+
+	emails = config_File['AdminEmail'].split(',')
+
+	result = validation.validate(emails)
 
 	if (result == True):
 		print ("Execution will proceed.")
-		parseWrite()
+		parseWrite(config_File)
 	else:
 		print ("Execution stopped.")
 
-def parseWrite():
+def parseWrite(config_File):
 
 	#This will read the Master file and take the Values from
-	masterFile = open('./inputfiles/tcs.solr.package.parsed.withplatformid.csv','r+')
+	masterFile = open('./inputfiles/' + config_File['tcsInputFile'],'r+')
 	masterreader = csv.reader(masterFile)
 
 	rowNo = 0
@@ -63,7 +68,7 @@ def parseWrite():
 
 
 	#This will read the first Input file and take the providerassetid 
-	fibeAssest = open('./inputfiles/latestfibeassets.csv','r')
+	fibeAssest = open('./inputfiles/' + config_File['FIBEInputFile'],'r')
 	reader1 = csv.reader(fibeAssest)
 
 	rowNo1 = 0
@@ -85,7 +90,7 @@ def parseWrite():
 		rowNo1 = rowNo1 + 1
 
 	#This will read the second Input file and take the providerassetid 
-	aliantAssest = open('./inputfiles/latestaliantassets.csv','r')
+	aliantAssest = open('./inputfiles/' + config_File['AliantInputFile'],'r')
 	reader2 = csv.reader(aliantAssest)
 
 	rowNo2 = 0
@@ -108,7 +113,7 @@ def parseWrite():
 		rowNo2 = rowNo2 + 1
 
 	#This will read the third Input file and take the assetId and msdId 
-	vcmReport = open('./inputfiles/vcmreport.csv','r')
+	vcmReport = open('./inputfiles/' + config_File['VCMInputFile'],'r')
 	reader3 = csv.reader(vcmReport)
 
 	rowNo3 = 0
@@ -133,7 +138,7 @@ def parseWrite():
 		rowNo3 = rowNo3 + 1
 
 	#This will read the fourth Input file and take the tcsMasterId and vssAssetId 
-	vssaFile = open('./inputfiles/lastestVSSAcsv.csv','r')
+	vssaFile = open('./inputfiles/' + config_File['VSSAInputFile'],'r')
 	reader4 = csv.reader(vssaFile)
 
 	rowNo4 = 0
@@ -152,7 +157,7 @@ def parseWrite():
 		rowNo4 = rowNo4 + 1
 
 	#This will read the fifth Input file and take the ID and providerId
-	ipvodFile = open('./inputfiles/ipvod.parsed.txt','r+')
+	ipvodFile = open('./inputfiles/' + config_File['IPVODInputFile'],'r+')
 
 	rowNo5 = 0
 	headerSplit5 = []
@@ -173,7 +178,7 @@ def parseWrite():
 		rowNo5 = rowNo5 + 1
 
 	#This will read the sixth Input file and take the contractId and providerId
-	contractFile = open('./inputfiles/list_contract_provider','r+')
+	contractFile = open('./Libraries/list_contract_provider','r+')
 	reader6 = csv.reader(contractFile)
 	contract_List = []
 
@@ -181,7 +186,7 @@ def parseWrite():
 		contract_List.append(row[0])
 
 	#This will read the seventh Input file and take the contractId and priority
-	contractFile = open('./inputfiles/prioritymapping.csv','r+')
+	contractFile = open('./Libraries/prioritymapping.csv','r+')
 	reader7 = csv.reader(contractFile)
 
 	rowNo7 = 0
@@ -203,12 +208,27 @@ def parseWrite():
 		rowNo7 = rowNo7 + 1
 
 
+	InvalidContract_File = open('./inputfiles/InvalidContract.txt','r+')
+
+	InvalidContract_List = []
+
+	for row in InvalidContract_File:
+		InvalidContract_List.append(row)
+
+	ContractOverride_File = open('./inputfiles/ContractOverride.txt','r+')
+
+	ContractOverride_List = []
+
+	for row in ContractOverride_File:
+		ContractOverride_List.append(row)
+
+
 	#This is the output file
-	csvFile = open('./outputfiles/packageIdFile.csv','w')
+	csvFile = open('./outputfiles/outputfile.csv','w')
 	writer = csv.writer(csvFile)
 
 	#Headers of output file
-	writer.writerow(['prodid','TCSassetid','FIBEAssetID','vcmassetid','FONSEAssetID','IPVODAssetID','title','providContractId','contract','licensestart','licenseEnd','PriorityContractId','Future','FIBE','ALIANT','FONSE','IPVOD','VCM','VSPP','categories','tcsduration'])
+	writer.writerow(['prodid','TCSassetid','FIBEAssetID','vcmassetid','FONSEAssetID','IPVODAssetID','title','providContractId','contract','licensestart','licenseEnd','PriorityContractId','Future','FIBE','ALIANT','FONSE','IPVOD','VCM','VSPP','categories','tcsduration','Valid Contract','Valid Asset','Ingestion State'])
 
 
 	#This part will iterate through all files and match master file's packageId and ContractId with other files elements
@@ -227,94 +247,109 @@ def parseWrite():
 		VSPPAssetID  = content.split('|')[VSPPAssetID_row]
 		IPVODAssetID = content.split('|')[IPVODAssetID_row]
 
-		#Values from input files
-		FibeValue   = ''
-		AliantValue = ''
-		VCM_Value   = ''
-		VsspValue   = ''
-		IPVOD_value = ''
-		categories  = ''
-		azukiIngestionState = ''
-		ipvod_assetValue    = ''
+		InvalidContract_Value = '' 
+		for value in InvalidContract_List:
+			if ContractId in value:
+				InvalidContract_Value = 'NO'
 
-		providContractId   = ''
-		PriorityContractId = ''
+		ContractOverride_Value = ''
+		for value in ContractOverride_List:
+			if ProductId in value:
+				ContractOverride_Value = 'NO'
 
-		for PSI1 in PSI_List1:
-			if FIBEAssetID == PSI1:#matching FIBEAssetID with providerAssetId
-				FibeValue = PSI1
-
-		for PSI2 in PSI_List2:
-			if FIBEAssetID == PSI2:#matching FIBEAssetID with providerAssetId
-				AliantValue = PSI2
-
-		for vcm in vcm_List:
-			if PackageId == vcm[vcmReport_row]:#matching packageId vcmAssetId
-				categories = vcm[vcmReport_categories]
-				azukiIngestionState = vcm[vcmReport_azukiIngestionState]
-			if VCMAssetID == vcm[vcmReport_value]:
-				VCM_Value  = vcm[vcmReport_value]
-
-		for vssa in vssa_List:
-			if VSPPAssetID == vssa[vssa_row]:#matching VSPPAssetID
-				VsspValue = vssa[vssa_row]
-
-		for ipvod in ipvod_List:
-			ipvod = ipvod.split('|')
-			if PackageId == ipvod[ipvod_row]:
-				ipvod_assetValue = ipvod[ipvod_value]
-			if IPVODAssetID == ipvod[ipvod_value]:#matching IPVODAssetID
-				IPVOD_value = ipvod[ipvod_value]
-
-		for contract in contract_List:
-			if ContractId in contract:#matching ContractId
-				contract = contract.split('|')
-				providContractId = contract[1]
-
-		for mapping in mapping_List:
-				mapping = mapping.split('|')
-				if ContractId == mapping[mapping_row]:#matching ContractId
-					PriorityContractId = mapping[mapping_value]
-
-		if FibeValue == '':#For FIBE
-			Fibe = 'NO'
+		if InvalidContract_Value == 'NO':
+			element = [ProductId,PackageId,PackageId,'N/A','N/A','N/A',title,'N/A',ContractId,LicenseStart,LicenseEnd,'N/A',Future,'','','','','','','',tcsduration,'NO','','N/A']
+		
+		elif ContractOverride_Value == 'NO':
+			element = [ProductId,PackageId,PackageId,'N/A','N/A','N/A',title,'N/A',ContractId,LicenseStart,LicenseEnd,'N/A',Future,'','','','','','','',tcsduration,'YES','NO','N/A']
+		
 		else:
-			Fibe = 'YES'
+			#Values from input files
+			FibeValue   = ''
+			AliantValue = ''
+			VCM_Value   = ''
+			VsspValue   = ''
+			IPVOD_value = ''
+			categories  = ''
+			azukiIngestionState = ''
+			ipvod_assetValue    = ''
 
-		if AliantValue == '':#For Aliant
-			Aliant = 'NO'
-		else:
-			Aliant = 'YES'
+			providContractId   = ''
+			PriorityContractId = ''
 
-		if VCM_Value == '':#For VCM
-			VCM = 'NO'
-		else:
-			VCM = 'YES'
+			for PSI1 in PSI_List1:
+				if FIBEAssetID == PSI1:#matching FIBEAssetID with providerAssetId
+					FibeValue = PSI1
 
-		if VsspValue == '':#For VSPP
-			VSPP = 'NO'
-		else:
-			VSPP = 'YES'
+			for PSI2 in PSI_List2:
+				if FIBEAssetID == PSI2:#matching FIBEAssetID with providerAssetId
+					AliantValue = PSI2
 
-		if IPVOD_value == '':#For IPVOD
-			IPVOD = 'NO'
-		else:
-			IPVOD = 'YES'
+			for vcm in vcm_List:
+				if PackageId == vcm[vcmReport_row]:#matching packageId vcmAssetId
+					categories = vcm[vcmReport_categories]
+					azukiIngestionState = vcm[vcmReport_azukiIngestionState]
+					VCM_Value  = vcm[vcmReport_value]				
 
-		if azukiIngestionState == 'FINISHED':#For FONSE
-			azukiIngestion_Value = 'YES'
-		else:
-			azukiIngestion_Value = 'NO'
+			for vssa in vssa_List:
+				if VSPPAssetID == vssa[vssa_row]:#matching VSPPAssetID
+					VsspValue = vssa[vssa_row]
 
-		LicenseDate = datetime.strptime(LicenseStart, '%Y/%m/%d %H:%M')#For FUTURE
-		now = datetime.now()
-		if LicenseDate > now:
-			Future = 'YES'
-		else:
-			Future = 'NO'
+			for ipvod in ipvod_List:
+				ipvod = ipvod.split('|')
+				if PackageId == ipvod[ipvod_row]:
+					ipvod_assetValue = ipvod[ipvod_value]
+				if IPVODAssetID == ipvod[ipvod_value]:#matching IPVODAssetID
+					IPVOD_value = ipvod[ipvod_value]
 
-		#final outcome from all files this will written into output file
-		element = [ProductId,PackageId,PackageId,VCM_Value,'FONSEAssetID',ipvod_assetValue,title,providContractId,ContractId,LicenseStart,LicenseEnd,PriorityContractId,Future,Fibe,Aliant,azukiIngestion_Value,IPVOD,VCM,VSPP,categories,tcsduration]
-		writer.writerow(element)
+			for contract in contract_List:
+				if ContractId in contract:#matching ContractId
+					contract = contract.split('|')
+					providContractId = contract[1]
+
+			for mapping in mapping_List:
+					mapping = mapping.split('|')
+					if ContractId == mapping[mapping_row]:#matching ContractId
+						PriorityContractId = mapping[mapping_value]
+
+			if FibeValue == '':#For FIBE
+				Fibe = 'NO'
+			else:
+				Fibe = 'YES'
+
+			if AliantValue == '':#For Aliant
+				Aliant = 'NO'
+			else:
+				Aliant = 'YES'
+
+			if VCM_Value == '':#For VCM
+				VCM = 'NO'
+			else:
+				VCM = 'YES'
+
+			if VsspValue == '':#For VSPP
+				VSPP = 'NO'
+			else:
+				VSPP = 'YES'
+
+			if IPVOD_value == '':#For IPVOD
+				IPVOD = 'NO'
+			else:
+				IPVOD = 'YES'
+
+			if azukiIngestionState == 'FINISHED':#For FONSE
+				azukiIngestion_Value = 'YES'
+			else:
+				azukiIngestion_Value = 'NO'
+
+			LicenseDate = datetime.strptime(LicenseStart, '%Y/%m/%d %H:%M')#For FUTURE
+			now = datetime.now()
+			if LicenseDate > now:
+				Future = 'YES'
+			else:
+				Future = 'NO'
+					
 			
+			element = [ProductId,PackageId,PackageId,VCM_Value,VSPPAssetID,ipvod_assetValue,title,providContractId,ContractId,LicenseStart,LicenseEnd,PriorityContractId,Future,Fibe,Aliant,azukiIngestion_Value,IPVOD,VCM,VSPP,categories,tcsduration,"YES","YES",azukiIngestionState]
 
+		writer.writerow(element)

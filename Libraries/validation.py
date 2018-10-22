@@ -2,7 +2,9 @@ import os.path
 from datetime import datetime, timedelta
 import Send_email
 
-def validate():
+def validate(admin_Emails):
+
+	print(admin_Emails)
 
 	for filename in os.listdir('./inputfiles'):#Iterate through all files in inputfiles folder
 
@@ -17,7 +19,7 @@ def validate():
 		else:
 			ageStatus = False
 			print (filename + " is more than 24 hours")
-			#Send_email.send_Email(filename)
+			#Send_email.send_Email(filename,admin_Emails)
 			exit()		
 
 	return ageStatus		

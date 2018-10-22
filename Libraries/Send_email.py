@@ -2,17 +2,19 @@ import smtplib
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 
-def send_Email(fileName):
-	msg = MIMEMultipart()
-	msg['From'] = 'From address'
-	msg['To'] = 'To address'
-	msg['Subject'] = 'Subject'
-	message = 'Actual MSG'
-	msg.attach(MIMEText(message))
+def send_Email(fileName,emails):
 
-	server = smtplib.SMTP_SSL('smtpout.secureserver.net', 465)
-	server.login('From address', 'password')
+	for mail in emails:
+		msg = MIMEMultipart()
+		msg['From'] = 'From address'
+		msg['To'] = mail
+		msg['Subject'] = 'Subject'
+		message = 'Actual MSG'
+		msg.attach(MIMEText(message))
 
-	server.sendmail('From address','To address',msg.as_string())
+		server = smtplib.SMTP_SSL('smtpout.secureserver.net', 465)
+		server.login('From address', 'password')
 
-	server.quit()
+		server.sendmail('From address',mail,msg.as_string())
+
+		server.quit()
