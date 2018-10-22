@@ -21,7 +21,7 @@ sdist/
 var/
 wheels/
 outputfiles/
-inputfiles/
+#inputfiles/
 *.egg-info/
 .installed.cfg
 *.egg
