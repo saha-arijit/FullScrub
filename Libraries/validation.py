@@ -4,8 +4,6 @@ import Send_email
 
 def validate(admin_Emails):
 
-	print(admin_Emails)
-
 	for filename in os.listdir('./inputfiles'):#Iterate through all files in inputfiles folder
 
 		file_createdTime = datetime.fromtimestamp(os.path.getctime('./inputfiles/'+filename)).strftime('%Y-%m-%d %H:%M:%S')#File Creation time in specific format
