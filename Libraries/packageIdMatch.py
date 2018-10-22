@@ -2,6 +2,7 @@ import csv
 from datetime import datetime
 import validation
 import readConfig
+import Send_email
 
 
 def create_csv():
@@ -65,6 +66,8 @@ def parseWrite(config_File):
 			contentList.append(finalRow)
 
 		rowNo = rowNo + 1
+
+	inputfil_rowNo = rowNo
 
 
 	#This will read the first Input file and take the providerassetid 
@@ -227,6 +230,8 @@ def parseWrite(config_File):
 	csvFile = open('./outputfiles/outputfile.csv','w')
 	writer = csv.writer(csvFile)
 
+	outputfile_rowNo = 1
+
 	#Headers of output file
 	writer.writerow(['prodid','TCSassetid','FIBEAssetID','vcmassetid','FONSEAssetID','IPVODAssetID','title','providContractId','contract','licensestart','licenseEnd','PriorityContractId','Future','FIBE','ALIANT','FONSE','IPVOD','VCM','VSPP','categories','tcsduration','Valid Contract','Valid Asset','Ingestion State'])
 
@@ -352,4 +357,12 @@ def parseWrite(config_File):
 			
 			element = [ProductId,PackageId,PackageId,VCM_Value,VSPPAssetID,ipvod_assetValue,title,providContractId,ContractId,LicenseStart,LicenseEnd,PriorityContractId,Future,Fibe,Aliant,azukiIngestion_Value,IPVOD,VCM,VSPP,categories,tcsduration,"YES","YES",azukiIngestionState]
 
+		outputfile_rowNo = outputfile_rowNo + 1
 		writer.writerow(element)
+
+	if inputfil_rowNo == outputfile_rowNo:
+		pass
+	else:
+		emails = config_File['AdminEmail'].split(',')
+		pass
+		# Send_email.send_Email('',emails)
