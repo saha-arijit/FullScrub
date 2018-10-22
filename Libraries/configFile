@@ -1,0 +1,9 @@
+tcsInputFile:tcs.solr.package.parsed.withplatformid.csv	
+FIBEInputFile:latestfibeassets.csv
+AliantInputFile:latestalientassets.csv
+VCMInputFile:vcmreport.csv
+VSSAInputFile:latestVSSAcsv.csv
+IPVODInputFile:ipvod.parsed.txt
+AdminEmail:abc@gmail.com,abc1@gmail.com
+
+
