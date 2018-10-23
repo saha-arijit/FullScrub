@@ -13,11 +13,12 @@ def create_csv():
 
 	result = validation.validate(emails)
 
-	if (result == True):
-		print ("Execution will proceed.")
-		parseWrite(config_File)
-	else:
-		print ("Execution stopped.")
+	parseWrite(config_File)
+	# if (result == True):
+	# 	print ("Execution will proceed.")
+	# 	parseWrite(config_File)
+	# else:
+	# 	print ("Execution stopped.")
 
 def parseWrite(config_File):
 
@@ -211,14 +212,14 @@ def parseWrite(config_File):
 		rowNo7 = rowNo7 + 1
 
 
-	InvalidContract_File = open('./inputfiles/InvalidContract.txt','r+')
+	InvalidContract_File = open('./Libraries/input_Files/invalidcontractfile.txt','r+')
 
 	InvalidContract_List = []
 
 	for row in InvalidContract_File:
 		InvalidContract_List.append(row)
 
-	ContractOverride_File = open('./inputfiles/ContractOverride.txt','r+')
+	ContractOverride_File = open('./Libraries/input_Files/contractoverride.txt','r+')
 
 	ContractOverride_List = []
 

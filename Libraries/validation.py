@@ -18,6 +18,6 @@ def validate(admin_Emails):
 			ageStatus = False
 			print (filename + " is more than 24 hours")
 			#Send_email.send_Email(filename,admin_Emails)
-			exit()		
+			#exit()		
 
 	return ageStatus		
