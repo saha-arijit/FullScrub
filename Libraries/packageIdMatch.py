@@ -1,5 +1,7 @@
 import csv
 from datetime import datetime
+import shutil
+import os
 import validation
 import readConfig
 import Send_email
@@ -13,7 +15,8 @@ def create_csv():
 
 	result = validation.validate(emails)
 
-	parseWrite(config_File)
+	outputfile_name = parseWrite(config_File)
+	return outputfile_name
 	# if (result == True):
 	# 	print ("Execution will proceed.")
 	# 	parseWrite(config_File)
@@ -238,7 +241,11 @@ def parseWrite(config_File):
 	ContractOverride_VCM   = ContractOverride_List[1]
 
 	#This is the output file
-	csvFile = open('./outputfiles/outputfile.csv','w')
+	now = datetime.now()
+	global outputfile_name
+	outputfile_name = './outputfiles/full.scrub.'+str(now)+'.csv'
+	outputfile_name = outputfile_name.replace(' ','_')
+	csvFile = open(outputfile_name,'w')
 	writer = csv.writer(csvFile)
 
 	outputfile_rowNo = 1
@@ -282,7 +289,7 @@ def parseWrite(config_File):
 
 		if ContractId in InvalidContract_Fibe:
 			fibeAliant = 'N/A'
-			valid_Contract = 'No'
+			valid_Contract = 'NO'
 		else:
 			for PSI1 in PSI_List1:
 				if FIBEAssetID == PSI1:#matching FIBEAssetID with providerAssetId
@@ -301,11 +308,11 @@ def parseWrite(config_File):
 		if ContractId in InvalidContract_VCM:
 			VCM_Value = 'N/A'
 			FONSEAssetID = 'N/A'
-			valid_Contract = 'No'
+			valid_Contract = 'NO'
 		elif ProductId in ContractOverride_Fonse:
 			VCM_Value = 'N/A'
 			FONSEAssetID = 'N/A'
-			valid_Asset = 'No'
+			valid_Asset = 'NO'
 		else:
 			for vcm in vcm_List:
 				if PackageId == vcm[vcmReport_row]:#matching packageId vcmAssetId
@@ -323,8 +330,7 @@ def parseWrite(config_File):
 
 		if ContractId in InvalidContract_ipvod:
 			IPVOD_value = 'N/A'
-			ipvod_assetValue = 'N/A'
-			valid_Contract = 'No'
+			valid_Contract = 'NO'
 		else:
 			for ipvod in ipvod_List:
 				ipvod = ipvod.split('|')
@@ -353,6 +359,7 @@ def parseWrite(config_File):
 
 		if fibeAliant == 'N/A':
 			Aliant = 'N/A'
+			fibeAliant = ''
 		elif AliantValue == '':#For Aliant
 			Aliant = 'NO'
 		else:
@@ -360,6 +367,7 @@ def parseWrite(config_File):
 
 		if VCM_Value == 'N/A':
 			VCM = 'N/A'
+			VCM_Value = ''
 		elif VCM_Value == '':#For VCM
 			VCM = 'NO'
 		else:
@@ -378,6 +386,7 @@ def parseWrite(config_File):
 			IPVOD = 'YES'
 
 		if FONSEAssetID == 'N/A':
+			FONSEAssetID = ''
 			azukiIngestion_Value = 'N/A'
 		else:
 			if azukiIngestionState == 'FINISHED':#For FONSE
@@ -398,9 +407,14 @@ def parseWrite(config_File):
 		outputfile_rowNo = outputfile_rowNo + 1
 		writer.writerow(element)
 
+
+	# os.system('python ./Libraries/copyFile.py '+outputfile_name)
+
 	if inputfil_rowNo == outputfile_rowNo:
 		pass
 	else:
 		emails = config_File['AdminEmail'].split(',')
 		pass
 		# Send_email.send_Email('',emails)
+		
+	return outputfile_name

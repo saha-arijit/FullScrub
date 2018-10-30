@@ -15,10 +15,12 @@ def FullScrub():
 				creates a .csv file
 				
 	""" 
-	packageIdMatch.create_csv()
+	outputfile_name = packageIdMatch.create_csv()
+
+	os.system('python ./Libraries/copyFile.py '+outputfile_name)
 
 	print("Completed")
 
-	
+
 if __name__ == '__main__':
 	FullScrub()
