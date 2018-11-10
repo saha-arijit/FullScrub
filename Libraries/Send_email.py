@@ -1,6 +1,7 @@
 import smtplib
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
+import logger
 
 def send_Email(fileName,emails):
 

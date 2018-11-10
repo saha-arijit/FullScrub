@@ -1,6 +1,7 @@
+import logger
 
 def readConfig():
-	config_File = open('./Libraries/configFile','r+')
+	config_File = open('./Libraries/input_Files/configFile','r+')
 	files = { }
 
 	for line in config_File:
@@ -29,5 +30,8 @@ def readConfig():
 				files['IPVODInputFile'] = line.split('IPVODInputFile:')[1]
 			elif 'AdminEmail' in line:
 				files['AdminEmail'] = line.split('AdminEmail:')[1]
+			elif 'log' in line:
+				files['log'] = line.split('log:')[1]
 
+	logger.MessageLog("Got information from conf file")
 	return files

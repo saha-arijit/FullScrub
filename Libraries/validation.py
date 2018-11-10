@@ -1,6 +1,7 @@
 import os.path
 from datetime import datetime, timedelta
 import Send_email
+import logger
 
 def validate(admin_Emails):
 
@@ -14,9 +15,11 @@ def validate(admin_Emails):
 
 		if file_age > now:#Checking whether file valid or not
 			ageStatus = True
+			logger.MessageLog(filename + " is not more than 24 hours")
 		else:
 			ageStatus = False
 			print (filename + " is more than 24 hours")
+			logger.ErrorLog(filename + " is more than 24 hours")
 			#Send_email.send_Email(filename,admin_Emails)
 			#exit()		
 
