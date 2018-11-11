@@ -5,4 +5,4 @@ VCMInputFile:vcmreport.csv
 VSSAInputFile:lastestVSSAcsv.csv
 IPVODInputFile:ipvod.parsed.txt
 AdminEmail:abc@gmail.com,abc1@gmail.com
-log:YES
+log:NO

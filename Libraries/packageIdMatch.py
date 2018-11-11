@@ -491,7 +491,7 @@ def parseWrite(config_File):
 
 	logger.MessageLog("Writing the outputfile")
 
-	with concurrent.futures.ThreadPoolExecutor(max_workers=10000000) as executor:
+	with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
 		{executor.submit(matchNWrite, val): val for val in contentList}
 
 	logger.MessageLog("outputfile is created")
