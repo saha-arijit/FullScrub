@@ -10,6 +10,11 @@ def LoggerMethod(message):
 
 	config_File = readConfig.readConfig()
 
+	if os.path.isdir("./Log"):
+		pass
+	else:
+		os.mkdir("./Log")
+		
 	if config_File['log'] == 'NO':
 		log_file_name = "./Log/execution.log"
 		logging_level = logging.INFO

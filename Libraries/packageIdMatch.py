@@ -2,55 +2,11 @@ import csv
 from datetime import datetime
 import shutil
 import os
-import concurrent.futures
-import threading
 import validation
 import readConfig
 import Send_email
 import logger
 
-contentList = []
-PSI_List1   = []
-PSI_List2   = []
-vcm_List    = []
-vssa_List   = []
-ipvod_List  = []
-mapping_List= []
-contract_List = []
-InvalidContract_List  = []
-ContractOverride_List = []
-
-PackageId_row = ''
-ContractId_row = ''
-ProductId_row = ''
-title_row = ''
-LicenseStart_row = ''
-LicenseEnd_row = ''
-tcsduration_row = '' 
-VCMAssetID_row = ''
-FIBEAssetID_row = '' 
-VSPPAssetID_row = ''  
-IPVODAssetID_row = ''
-
-providerassetid_row = ''
-aliant_row = ''
-vcmReport_row = ''
-vcmReport_value = ''
-vcmReport_categories = ''
-vcmReport_azukiIngestionState = '' 
-vcmReport_azukiAssetId = ''
-vssa_row = ''
-ipvod_value = ''
-ipvod_row = ''
-mapping_row = ''
-mapping_value = ''
-
-now = datetime.now()
-outputfile_name = './outputfiles/full.scrub.'+str(now)+'.csv'
-outputfile_name = outputfile_name.replace(' ','_')
-csvFile = open(outputfile_name,'w')
-writer = csv.writer(csvFile)
-writer.writerow(['prodid','TCSassetid','FIBEAssetID','vcmassetid','FONSEAssetID','IPVODAssetID','title','providContractId','contract','licensestart','licenseEnd','PriorityContractId','Future','FIBE','ALIANT','FONSE','IPVOD','VCM','VSPP','categories','tcsduration','Valid Contract','Valid Asset','Ingestion State'])
 
 def create_csv():
 
@@ -63,216 +19,18 @@ def create_csv():
 	logger.MessageLog("Validation completed")
 
 	outputfile_name = parseWrite(config_File)
-	# return outputfile_name
+	return outputfile_name
 	# if (result == True):
 	# 	print ("Execution will proceed.")
 	# 	parseWrite(config_File)
 	# else:
 	# 	print ("Execution stopped.")
 
-def matchNWrite(content):
-
-	InvalidContract_Fonse = InvalidContract_List[0]
-	InvalidContract_VCM   = InvalidContract_List[1]
-	InvalidContract_ipvod = InvalidContract_List[2]
-	InvalidContract_Fibe  = InvalidContract_List[3]
-
-	ContractOverride_Fonse = ContractOverride_List[0]
-	ContractOverride_VCM   = ContractOverride_List[1]
-
-
-	#Values from Master File
-	ProductId    = content.split('|')[ProductId_row]
-	PackageId    = content.split('|')[PackageId_row]
-	ContractId   = content.split('|')[ContractId_row]
-	title        = content.split('|')[title_row]
-	LicenseStart = content.split('|')[LicenseStart_row]
-	LicenseEnd   = content.split('|')[LicenseEnd_row]
-	tcsduration  = content.split('|')[tcsduration_row]
-	VCMAssetID   = content.split('|')[VCMAssetID_row]
-	FIBEAssetID  = content.split('|')[FIBEAssetID_row] 
-	VSPPAssetID  = content.split('|')[VSPPAssetID_row]
-	IPVODAssetID = content.split('|')[IPVODAssetID_row]
-
-	#Values from input files
-	FibeValue   = ''
-	AliantValue = ''
-	VCM_Value   = ''
-	VsspValue   = ''
-	IPVOD_value = ''
-	categories  = ''
-	azukiIngestionState = ''
-	ipvod_assetValue    = ''
-	FONSEAssetID = ''
-
-	providContractId   = ''
-	PriorityContractId = ''
-
-	valid_Contract = 'YES'
-	valid_Asset    = 'YES'
-
-	if ContractId in InvalidContract_Fibe:
-		logger.ErrorLog("Invalid Contract Id present in Fibe")
-		logger.ErrorLog("Invalid Contract Id present in Aliant")
-		fibeAliant = 'N/A'
-		valid_Contract = 'NO'
-	else:
-		for PSI1 in PSI_List1:
-			if FIBEAssetID == PSI1:#matching FIBEAssetID with providerAssetId
-				FibeValue = PSI1
-
-		for PSI2 in PSI_List2:
-			if FIBEAssetID == PSI2:#matching FIBEAssetID with providerAssetId
-				AliantValue = PSI2
-
-		if FibeValue == '' and AliantValue == '':#For FIBEAssetID of output file
-			fibeAliant = ''
-		elif FibeValue == AliantValue:
-			fibeAliant = FibeValue
-
-
-	if ContractId in InvalidContract_VCM:
-		logger.ErrorLog("Invalid Contract Id present in VCM")
-		VCM_Value = 'N/A'
-		FONSEAssetID = 'N/A'
-		valid_Contract = 'NO'
-	elif ProductId in ContractOverride_Fonse:
-		logger.ErrorLog("Invalid Product Id present in Fonse")
-		VCM_Value = 'N/A'
-		FONSEAssetID = 'N/A'
-		valid_Asset = 'NO'
-	else:
-		for vcm in vcm_List:
-			if PackageId == vcm[vcmReport_row]:#matching packageId vcmAssetId
-				categories = vcm[vcmReport_categories]
-				azukiIngestionState = vcm[vcmReport_azukiIngestionState]
-				VCM_Value  = vcm[vcmReport_value]
-				if VSPPAssetID == vcm[vcmReport_azukiAssetId]:
-					FONSEAssetID = VSPPAssetID
-
-
-	for vssa in vssa_List:
-		if VSPPAssetID == vssa[vssa_row]:#matching VSPPAssetID
-			VsspValue = vssa[vssa_row]
-
-
-	if ContractId in InvalidContract_ipvod:
-		logger.ErrorLog("Invalid Contract Id present in IPVOD")
-		IPVOD_value = 'N/A'
-		valid_Contract = 'NO'
-	else:
-		for ipvod in ipvod_List:
-			ipvod = ipvod.split('|')
-			if PackageId == ipvod[ipvod_row]:
-				ipvod_assetValue = ipvod[ipvod_value]
-			if IPVODAssetID == ipvod[ipvod_value]:#matching IPVODAssetID
-				IPVOD_value = ipvod[ipvod_value]
-
-
-	for contract in contract_List:
-		if ContractId in contract:#matching ContractId
-			contract = contract.split('|')
-			providContractId = contract[1]
-
-	for mapping in mapping_List:
-			mapping = mapping.split('|')
-			if ContractId == mapping[mapping_row]:#matching ContractId
-				PriorityContractId = mapping[mapping_value]
-
-	if fibeAliant == 'N/A':
-		Fibe = 'N/A'
-	elif FibeValue == '':#For FIBE
-		Fibe = 'NO'
-	else:
-		Fibe = 'YES'
-
-	if fibeAliant == 'N/A':
-		Aliant = 'N/A'
-		fibeAliant = ''
-	elif AliantValue == '':#For Aliant
-		Aliant = 'NO'
-	else:
-		Aliant = 'YES'
-
-	if VCM_Value == 'N/A':
-		VCM = 'N/A'
-		VCM_Value = ''
-	elif VCM_Value == '':#For VCM
-		VCM = 'NO'
-	else:
-		VCM = 'YES'
-
-	if VsspValue == '':#For VSPP
-		VSPP = 'NO'
-	else:
-		VSPP = 'YES'
-
-	if IPVOD_value == 'N/A':
-		IPVOD = 'N/A'
-	elif IPVOD_value == '':#For IPVOD
-		IPVOD = 'NO'
-	else:
-		IPVOD = 'YES'
-
-	if FONSEAssetID == 'N/A':
-		FONSEAssetID = ''
-		azukiIngestion_Value = 'N/A'
-	else:
-		if azukiIngestionState == 'FINISHED':#For FONSE
-			azukiIngestion_Value = 'YES'
-		else:
-			azukiIngestion_Value = 'NO'
-
-	LicenseDate = datetime.strptime(LicenseStart, '%Y/%m/%d %H:%M')#For FUTURE
-	now = datetime.now()
-	if LicenseDate > now:
-		Future = 'YES'
-	else:
-		Future = 'NO'
-		
-	element = [ProductId,PackageId,fibeAliant,VCM_Value,FONSEAssetID,ipvod_assetValue,title,providContractId,ContractId,LicenseStart,LicenseEnd,PriorityContractId,Future,Fibe,Aliant,azukiIngestion_Value,IPVOD,VCM,VSPP,categories,tcsduration,valid_Contract,valid_Asset,azukiIngestionState]
-	# outputfile_rowNo = outputfile_rowNo + 1
-	writer.writerow(element)
-
 def parseWrite(config_File):
 
-	logger.MessageLog("Reading the Input files")
-	global contentList
-	global PSI_List1
-	global PSI_List2
-	global vcm_List
-	global vssa_List
-	global ipvod_List
-	global mapping_List
-	global contract_List
-	global InvalidContract_List
-	global ContractOverride_List
-
-	global PackageId_row
-	global ContractId_row
-	global ProductId_row
-	global title_row
-	global LicenseStart_row
-	global LicenseEnd_row
-	global tcsduration_row 
-	global VCMAssetID_row
-	global FIBEAssetID_row 
-	global VSPPAssetID_row  
-	global IPVODAssetID_row
-
-	global providerassetid_row
-	global aliant_row
-	global vcmReport_row
-	global vcmReport_value
-	global vcmReport_categories
-	global vcmReport_azukiIngestionState 
-	global vcmReport_azukiAssetId
-	global vssa_row
-	global ipvod_value
-	global ipvod_row
-	global mapping_row
-	global mapping_value
 	#This will read the Master file and take the Values from
+	logger.MessageLog("Reading the Input files")
+
 	logger.MessageLog("Reading "+config_File['tcsInputFile'])
 	masterFile = open('./inputfiles/' + config_File['tcsInputFile'],'r+')
 	masterreader = csv.reader(masterFile)
@@ -345,7 +103,7 @@ def parseWrite(config_File):
 
 		rowNo1 = rowNo1 + 1
 
-	#This will read the second Input file and take the providerassetid
+	#This will read the second Input file and take the providerassetid 
 	logger.MessageLog("Reading "+config_File['AliantInputFile'])
 	aliantAssest = open('./inputfiles/' + config_File['AliantInputFile'],'r')
 	reader2 = csv.reader(aliantAssest)
@@ -369,7 +127,7 @@ def parseWrite(config_File):
 
 		rowNo2 = rowNo2 + 1
 
-	#This will read the third Input file and take the assetId and msdId
+	#This will read the third Input file and take the assetId and msdId 
 	logger.MessageLog("Reading "+config_File['VCMInputFile'])
 	vcmReport = open('./inputfiles/' + config_File['VCMInputFile'],'r')
 	reader3 = csv.reader(vcmReport)
@@ -397,8 +155,8 @@ def parseWrite(config_File):
 
 		rowNo3 = rowNo3 + 1
 
-	#This will read the fourth Input file and take the tcsMasterId and vssAssetId
-	logger.MessageLog("Reading "+config_File['VSSAInputFile']) 
+	#This will read the fourth Input file and take the tcsMasterId and vssAssetId 
+	logger.MessageLog("Reading "+config_File['VSSAInputFile'])
 	vssaFile = open('./inputfiles/' + config_File['VSSAInputFile'],'r')
 	reader4 = csv.reader(vssaFile)
 
@@ -440,7 +198,7 @@ def parseWrite(config_File):
 		rowNo5 = rowNo5 + 1
 
 	#This will read the sixth Input file and take the contractId and providerId
-	logger.MessageLog("Reading list_contract_provider")
+	logger.MessageLog("Reading list_contract_provider file")
 	contractFile = open('./Libraries/input_Files/list_contract_provider','r+')
 	reader6 = csv.reader(contractFile)
 	contract_List = []
@@ -449,7 +207,7 @@ def parseWrite(config_File):
 		contract_List.append(row[0])
 
 	#This will read the seventh Input file and take the contractId and priority
-	logger.MessageLog("Reading prioritymapping.csv")
+	logger.MessageLog("Reading prioritymapping file")
 	contractFile = open('./Libraries/input_Files/prioritymapping.csv','r+')
 	reader7 = csv.reader(contractFile)
 
@@ -487,30 +245,202 @@ def parseWrite(config_File):
 	for row in ContractOverride_File:
 		ContractOverride_List.append(row)
 
-	logger.MessageLog("Reading part completed")
+		
+
+	#This will have respective values of invalidcontratfile.txt
+	InvalidContract_Fonse = InvalidContract_List[0]
+	InvalidContract_VCM   = InvalidContract_List[1]
+	InvalidContract_ipvod = InvalidContract_List[2]
+	InvalidContract_Fibe  = InvalidContract_List[3]
+
+	ContractOverride_Fonse = ContractOverride_List[0]
+	ContractOverride_VCM   = ContractOverride_List[1]
+
+	#This is the output file
 
 	logger.MessageLog("Writing the outputfile")
+	
+	now = datetime.now()
+	global outputfile_name
+	outputfile_name = './outputfiles/full.scrub.'+str(now)+'.csv'
+	outputfile_name = outputfile_name.replace(' ','_')
+	csvFile = open(outputfile_name,'w')
+	writer = csv.writer(csvFile)
 
-	with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
-		{executor.submit(matchNWrite, val): val for val in contentList}
+	outputfile_rowNo = 1
 
-	logger.MessageLog("outputfile is created")
-
-# def matchNWrite(content):
+	#Headers of output file
+	writer.writerow(['prodid','TCSassetid','FIBEAssetID','vcmassetid','FONSEAssetID','IPVODAssetID','title','providContractId','contract','licensestart','licenseEnd','PriorityContractId','Future','FIBE','ALIANT','FONSE','IPVOD','VCM','VSPP','categories','tcsduration','Valid Contract','Valid Asset','Ingestion State'])
 
 
-# with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-#     {executor.submit(match_logic, val): val for val in contentList}
+	#This part will iterate through all files and match master file's packageId and ContractId with other files elements
+	for content in contentList:
 
+		#Values from Master File
+		ProductId    = content.split('|')[ProductId_row]
+		PackageId    = content.split('|')[PackageId_row]
+		ContractId   = content.split('|')[ContractId_row]
+		title        = content.split('|')[title_row]
+		LicenseStart = content.split('|')[LicenseStart_row]
+		LicenseEnd   = content.split('|')[LicenseEnd_row]
+		tcsduration  = content.split('|')[tcsduration_row]
+		VCMAssetID   = content.split('|')[VCMAssetID_row]
+		FIBEAssetID  = content.split('|')[FIBEAssetID_row] 
+		VSPPAssetID  = content.split('|')[VSPPAssetID_row]
+		IPVODAssetID = content.split('|')[IPVODAssetID_row]
+
+		#Values from input files
+		FibeValue   = ''
+		AliantValue = ''
+		VCM_Value   = ''
+		VsspValue   = ''
+		IPVOD_value = ''
+		categories  = ''
+		azukiIngestionState = ''
+		ipvod_assetValue    = ''
+		FONSEAssetID = ''
+
+		providContractId   = ''
+		PriorityContractId = ''
+
+		valid_Contract = 'YES'
+		valid_Asset    = 'YES'
+
+		if ContractId in InvalidContract_Fibe:
+			logger.ErrorLog("Invalid Contract Id present in Fibe")
+			logger.ErrorLog("Invalid Contract Id present in Aliant")
+			fibeAliant = 'N/A'
+			valid_Contract = 'NO'
+		else:
+			for PSI1 in PSI_List1:
+				if FIBEAssetID == PSI1:#matching FIBEAssetID with providerAssetId
+					FibeValue = PSI1
+
+			for PSI2 in PSI_List2:
+				if FIBEAssetID == PSI2:#matching FIBEAssetID with providerAssetId
+					AliantValue = PSI2
+
+			if FibeValue == '' and AliantValue == '':#For FIBEAssetID of output file
+				fibeAliant = ''
+			elif FibeValue == AliantValue:
+				fibeAliant = FibeValue
+
+
+		if ContractId in InvalidContract_VCM:
+			logger.ErrorLog("Invalid Contract Id present in VCM")
+			VCM_Value = 'N/A'
+			FONSEAssetID = 'N/A'
+			valid_Contract = 'NO'
+		elif ProductId in ContractOverride_Fonse:
+			logger.ErrorLog("Invalid Product Id present in Fonse")
+			VCM_Value = 'N/A'
+			FONSEAssetID = 'N/A'
+			valid_Asset = 'NO'
+		else:
+			for vcm in vcm_List:
+				if PackageId == vcm[vcmReport_row]:#matching packageId vcmAssetId
+					categories = vcm[vcmReport_categories]
+					azukiIngestionState = vcm[vcmReport_azukiIngestionState]
+					VCM_Value  = vcm[vcmReport_value]
+					if VSPPAssetID == vcm[vcmReport_azukiAssetId]:
+						FONSEAssetID = VSPPAssetID
+
+
+		for vssa in vssa_List:
+			if VSPPAssetID == vssa[vssa_row]:#matching VSPPAssetID
+				VsspValue = vssa[vssa_row]
+
+
+		if ContractId in InvalidContract_ipvod:
+			logger.ErrorLog("Invalid Contract Id present in IPVOD")
+			IPVOD_value = 'N/A'
+			valid_Contract = 'NO'
+		else:
+			for ipvod in ipvod_List:
+				ipvod = ipvod.split('|')
+				if PackageId == ipvod[ipvod_row]:
+					ipvod_assetValue = ipvod[ipvod_value]
+				if IPVODAssetID == ipvod[ipvod_value]:#matching IPVODAssetID
+					IPVOD_value = ipvod[ipvod_value]
+
+
+		for contract in contract_List:
+			if ContractId in contract:#matching ContractId
+				contract = contract.split('|')
+				providContractId = contract[1]
+
+		for mapping in mapping_List:
+				mapping = mapping.split('|')
+				if ContractId == mapping[mapping_row]:#matching ContractId
+					PriorityContractId = mapping[mapping_value]
+
+		if fibeAliant == 'N/A':
+			Fibe = 'N/A'
+		elif FibeValue == '':#For FIBE
+			Fibe = 'NO'
+		else:
+			Fibe = 'YES'
+
+		if fibeAliant == 'N/A':
+			Aliant = 'N/A'
+			fibeAliant = ''
+		elif AliantValue == '':#For Aliant
+			Aliant = 'NO'
+		else:
+			Aliant = 'YES'
+
+		if VCM_Value == 'N/A':
+			VCM = 'N/A'
+			VCM_Value = ''
+		elif VCM_Value == '':#For VCM
+			VCM = 'NO'
+		else:
+			VCM = 'YES'
+
+		if VsspValue == '':#For VSPP
+			VSPP = 'NO'
+		else:
+			VSPP = 'YES'
+
+		if IPVOD_value == 'N/A':
+			IPVOD = 'N/A'
+		elif IPVOD_value == '':#For IPVOD
+			IPVOD = 'NO'
+		else:
+			IPVOD = 'YES'
+
+		if FONSEAssetID == 'N/A':
+			FONSEAssetID = ''
+			azukiIngestion_Value = 'N/A'
+		else:
+			if azukiIngestionState == 'FINISHED':#For FONSE
+				azukiIngestion_Value = 'YES'
+			else:
+				azukiIngestion_Value = 'NO'
+
+		LicenseDate = datetime.strptime(LicenseStart, '%Y/%m/%d %H:%M')#For FUTURE
+		now = datetime.now()
+		if LicenseDate > now:
+			Future = 'YES'
+		else:
+			Future = 'NO'
+
+		
+		element = [ProductId,PackageId,fibeAliant,VCM_Value,FONSEAssetID,ipvod_assetValue,title,providContractId,ContractId,LicenseStart,LicenseEnd,PriorityContractId,Future,Fibe,Aliant,azukiIngestion_Value,IPVOD,VCM,VSPP,categories,tcsduration,valid_Contract,valid_Asset,azukiIngestionState]
+
+		outputfile_rowNo = outputfile_rowNo + 1
+		writer.writerow(element)
 
 
 	# os.system('python ./Libraries/copyFile.py '+outputfile_name)
 
-	# if inputfil_rowNo == outputfile_rowNo:
-	# 	pass
-	# else:
-	# 	emails = config_File['AdminEmail'].split(',')
-	# 	pass
+	if inputfil_rowNo == outputfile_rowNo:
+		pass
+	else:
+		emails = config_File['AdminEmail'].split(',')
+		pass
 		# Send_email.send_Email('',emails)
+
+	logger.MessageLog("outputfile is created")
 		
-	# return outputfile_name
+	return outputfile_name
