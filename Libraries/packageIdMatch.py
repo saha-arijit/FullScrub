@@ -13,9 +13,10 @@ def create_csv():
 	config_File = readConfig.readConfig()#This will read the config file and return the values in a dict
 
 	emails = config_File['AdminEmail'].split(',')
-
+	sender_mail = config_File['sender_Id']
+	sender_pwd  = config_File['sender_password']
 	logger.MessageLog("Validation started")
-	result = validation.validate(emails)
+	result = validation.validate(emails,sender_mail,sender_pwd)
 	logger.MessageLog("Validation completed")
 
 	outputfile_name = parseWrite(config_File)
@@ -439,7 +440,9 @@ def parseWrite(config_File):
 	else:
 		emails = config_File['AdminEmail'].split(',')
 		pass
-		# Send_email.send_Email('',emails)
+		# sender_mail = config_File['sender_Id']
+		# sender_pwd  = config_File['sender_password']
+		# Send_email.send_Email('',emails,sender_mail,sender_pwd)
 
 	logger.MessageLog("outputfile is created")
 		

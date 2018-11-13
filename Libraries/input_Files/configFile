@@ -4,5 +4,7 @@ AliantInputFile:latestaliantassets.csv
 VCMInputFile:vcmreport.csv
 VSSAInputFile:lastestVSSAcsv.csv
 IPVODInputFile:ipvod.parsed.txt
-AdminEmail:abc@gmail.com,abc1@gmail.com
+AdminEmail:kothalamuthuvicky@gmail.com
 log:NO
+sender_Id:vignesh.pandian@w5rtc.com
+sender_password:w5rtc123

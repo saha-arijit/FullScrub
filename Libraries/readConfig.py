@@ -32,6 +32,10 @@ def readConfig():
 				files['AdminEmail'] = line.split('AdminEmail:')[1]
 			elif 'log' in line:
 				files['log'] = line.split('log:')[1]
+			elif 'sender_Id' in line:
+				files['sender_Id'] = line.split('sender_Id:')[1]
+			elif 'sender_password' in line:
+				files['sender_password'] = line.split('sender_password:')[1]
 
 	logger.MessageLog("Got information from conf file")
 	return files
